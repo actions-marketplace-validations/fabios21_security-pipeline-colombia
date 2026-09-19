@@ -1028,6 +1028,7 @@ runs:
           exit 1
         fi
         
+        if [ -f "gitleaks-report.json" ] && [ -s "gitleaks-report.json" ]; then
           ACTUAL_SECRETS=$(sanitize_count "$(jq -r '.findings | length // 0' gitleaks-report.json 2>/dev/null || echo 0)")
           if [ "$ACTUAL_SECRETS" = "0" ]; then
             ACTUAL_SECRETS=$(sanitize_count "$(grep -c '"RuleID"' gitleaks-report.json 2>/dev/null || echo 0)")
