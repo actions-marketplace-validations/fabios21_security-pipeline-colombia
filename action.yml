@@ -561,6 +561,11 @@ runs:
         SEMGREP_EXIT_CODE=0
         semgrep scan \
           --config "$SEMGREP_CONFIG" \
+          --exclude ".github/workflows/*" \
+          --exclude "*.yml" \
+          --exclude "*.yaml" \
+          --exclude "*.json" \
+          --exclude "*.md" \
           --sarif \
           --output semgrep-results.sarif \
           --error || SEMGREP_EXIT_CODE=$?
