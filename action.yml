@@ -385,6 +385,33 @@ runs:
         # Ejecutar gitleaks y capturar resultado
         GITLEAKS_EXIT_CODE=0
         
+        # Crear configuración por defecto de Gitleaks si no existe
+        if [ ! -f ".gitleaks.toml" ]; then
+          echo "⚙️ Creando configuración por defecto de Gitleaks..."
+          cat > .gitleaks.toml << 'EOF'
+# Configuración por defecto de Gitleaks - Security Pipeline Colombia
+title = "Gitleaks Security Scan"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Allowlist para archivos de configuración del pipeline"
+paths = [
+  '''\.github/workflows/.*\.yml''',
+]
+
+regexes = [
+  '''example\.com''',
+  '''api\.example\.com''',
+  '''localhost''',
+]
+EOF
+          echo "✅ Configuración por defecto creada"
+        else
+          echo "✅ Usando configuración de Gitleaks del repositorio (.gitleaks.toml)"
+        fi
+        
         # Determinar modo de escaneo según configuración
         SCAN_MODE="${ACTION_SCAN_MODE:-pr-only}"
         echo "🔍 Modo de escaneo configurado: $SCAN_MODE"
