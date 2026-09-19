@@ -389,11 +389,8 @@ runs:
         if [ ! -f ".gitleaks.toml" ]; then
           echo "⚙️ Creando configuración por defecto de Gitleaks..."
           cat > .gitleaks.toml << 'EOF'
-# Configuración por defecto de Gitleaks - Security Pipeline Colombia
+# Configuración de Gitleaks - Security Pipeline Colombia
 title = "Gitleaks Security Scan"
-
-[extend]
-useDefault = true
 
 [allowlist]
 description = "Allowlist para archivos de configuración del pipeline"
@@ -407,25 +404,49 @@ regexes = [
   '''localhost''',
 ]
 
-# Reglas personalizadas para detectar secretos comunes
+# Reglas personalizadas de alta sensibilidad
 
 [[rules]]
-id = "generic-password"
-description = "Detected a generic password assignment"
-regex = '''(?i)(password|passwd|pwd|pass|secret|token)\s*[:=]\s*['"][^\s'"]{4,}['"]'''
-keywords = ["password", "passwd", "pwd", "pass", "secret", "token"]
+id = "password-assignment"
+description = "Password, secret, or token assignment detected"
+regex = '''(?i)(password|passwd|pwd|pass|secret|token|api_key|apikey)\s*[=:]\s*['\"]([^\s'\"]{4,})['\"]'''
+secretGroup = 2
 
 [[rules]]
-id = "password-variable"
-description = "Detected password in variable assignment"
-regex = '''(?i)(PASS|PASSWORD|SECRET|PWD|PASSWD)\s*=\s*['"][^\s'"]{4,}['"]'''
-keywords = ["PASS", "PASSWORD", "SECRET", "PWD", "PASSWD"]
+id = "uppercase-password-var"
+description = "Uppercase password variable assignment"
+regex = '''(PASS|PASSWORD|SECRET|PWD|PASSWD|API_KEY|APIKEY|TOKEN)\s*=\s*['\"]([^\s'\"]{4,})['\"]'''
+secretGroup = 2
 
 [[rules]]
-id = "generic-api-key"
-description = "Detected a Generic API Key"
-regex = '''(?i)(api[_-]?key|apikey)\s*[:=]\s*['"][a-zA-Z0-9]{8,}['"]'''
-keywords = ["apikey", "api_key"]
+id = "aws-access-key"
+description = "AWS Access Key"
+regex = '''(A3T[A-Z0-9]|AKIA|AGPA|AIDA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16}'''
+
+[[rules]]
+id = "github-pat"
+description = "GitHub Personal Access Token"
+regex = '''ghp_[0-9a-zA-Z]{36}'''
+
+[[rules]]
+id = "slack-webhook"
+description = "Slack Webhook"
+regex = '''https://hooks\.slack\.com/services/[A-Za-z0-9+/]{44,48}'''
+
+[[rules]]
+id = "google-api-key"
+description = "Google API Key"
+regex = '''AIza[0-9A-Za-z\-_]{35}'''
+
+[[rules]]
+id = "jwt-token"
+description = "JWT Token"
+regex = '''eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}'''
+
+[[rules]]
+id = "private-key"
+description = "Private Key"
+regex = '''-----BEGIN[ A-Z]*PRIVATE KEY-----'''
 EOF
           echo "✅ Configuración por defecto creada"
         else
