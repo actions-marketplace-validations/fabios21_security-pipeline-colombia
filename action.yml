@@ -406,6 +406,26 @@ regexes = [
   '''api\.example\.com''',
   '''localhost''',
 ]
+
+# Reglas personalizadas para detectar secretos comunes
+
+[[rules]]
+id = "generic-password"
+description = "Detected a generic password assignment"
+regex = '''(?i)(password|passwd|pwd|pass|secret|token)\s*[:=]\s*['"][^\s'"]{4,}['"]'''
+keywords = ["password", "passwd", "pwd", "pass", "secret", "token"]
+
+[[rules]]
+id = "password-variable"
+description = "Detected password in variable assignment"
+regex = '''(?i)(PASS|PASSWORD|SECRET|PWD|PASSWD)\s*=\s*['"][^\s'"]{4,}['"]'''
+keywords = ["PASS", "PASSWORD", "SECRET", "PWD", "PASSWD"]
+
+[[rules]]
+id = "generic-api-key"
+description = "Detected a Generic API Key"
+regex = '''(?i)(api[_-]?key|apikey)\s*[:=]\s*['"][a-zA-Z0-9]{8,}['"]'''
+keywords = ["apikey", "api_key"]
 EOF
           echo "✅ Configuración por defecto creada"
         else
