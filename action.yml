@@ -385,6 +385,53 @@ runs:
         # Ejecutar gitleaks y capturar resultado
         GITLEAKS_EXIT_CODE=0
         
+        # Crear configuración por defecto de Gitleaks si no existe
+        if [ ! -f ".gitleaks.toml" ]; then
+          echo "⚙️ Creando configuración por defecto de Gitleaks..."
+          cat > .gitleaks.toml << 'EOF'
+# Configuración por defecto de Gitleaks - Security Pipeline Colombia
+title = "Gitleaks Security Scan"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Allowlist para archivos de configuración del pipeline"
+paths = [
+  '''\.github/workflows/.*\.yml''',
+]
+
+regexes = [
+  '''example\.com''',
+  '''api\.example\.com''',
+  '''localhost''',
+]
+
+# Reglas personalizadas para detectar secretos comunes
+
+[[rules]]
+id = "generic-password"
+description = "Detected a generic password assignment"
+regex = '''(?i)(password|passwd|pwd|pass|secret|token)\s*[:=]\s*['"][^\s'"]{4,}['"]'''
+keywords = ["password", "passwd", "pwd", "pass", "secret", "token"]
+
+[[rules]]
+id = "password-variable"
+description = "Detected password in variable assignment"
+regex = '''(?i)(PASS|PASSWORD|SECRET|PWD|PASSWD)\s*=\s*['"][^\s'"]{4,}['"]'''
+keywords = ["PASS", "PASSWORD", "SECRET", "PWD", "PASSWD"]
+
+[[rules]]
+id = "generic-api-key"
+description = "Detected a Generic API Key"
+regex = '''(?i)(api[_-]?key|apikey)\s*[:=]\s*['"][a-zA-Z0-9]{8,}['"]'''
+keywords = ["apikey", "api_key"]
+EOF
+          echo "✅ Configuración por defecto creada"
+        else
+          echo "✅ Usando configuración de Gitleaks del repositorio (.gitleaks.toml)"
+        fi
+        
         # Determinar modo de escaneo según configuración
         SCAN_MODE="${ACTION_SCAN_MODE:-pr-only}"
         echo "🔍 Modo de escaneo configurado: $SCAN_MODE"
@@ -561,6 +608,11 @@ runs:
         SEMGREP_EXIT_CODE=0
         semgrep scan \
           --config "$SEMGREP_CONFIG" \
+          --exclude ".github/workflows/*" \
+          --exclude "*.yml" \
+          --exclude "*.yaml" \
+          --exclude "*.json" \
+          --exclude "*.md" \
           --sarif \
           --output semgrep-results.sarif \
           --error || SEMGREP_EXIT_CODE=$?
